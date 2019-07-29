@@ -214,19 +214,28 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	const unsigned short port = 3002;
 
 
-	WSAStartup(MAKEWORD(2, 2), &wsaData);
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData))
+	{
+		ErrorExit(_T("WSAStartup"));
+	}
+
 	server.sin_family = AF_INET;
 #ifdef _WINSOCK_DEPRECATED_NO_WARNINGS
-	server.sin_addr.s_addr = inet_addr("192.168.1.62");
+	server.sin_addr.s_addr = inet_addr("127.0.0.1");
 #else
 	InetPton(AF_INET, _T("127.0.0.1"), &server.sin_addr.s_addr);
 #endif
 
 	server.sin_port = htons(port);
 	sockClient = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
+	if (sockClient == INVALID_SOCKET)
+	{
+		ErrorExit(_T("socket()"));
+	}
+
 	iResult = connect(sockClient, (SOCKADDR*)& server, sizeof(SOCKADDR_IN));
 	if (iResult == SOCKET_ERROR)
-		return 1;
+		ErrorExit(_T("connect"));
 
 
 	ClientState* state = malloc(sizeof(ClientState));
